@@ -2,6 +2,11 @@ package Net::MythWeb::Programme;
 use Moose;
 use MooseX::StrictConstructor;
 
+has 'id' => (
+    is  => 'rw',
+    isa => 'Int',
+);
+
 has 'title' => (
     is  => 'rw',
     isa => 'Str',

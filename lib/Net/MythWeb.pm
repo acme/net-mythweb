@@ -1,6 +1,8 @@
 package Net::MythWeb;
 use Moose;
 use MooseX::StrictConstructor;
+use DateTime;
+use DateTime::Format::Strptime;
 use HTML::TreeBuilder::XPath;
 use Net::MythWeb::Channel;
 use Net::MythWeb::Programme;
@@ -58,12 +60,10 @@ sub _programme {
     my ( $self, $path ) = @_;
     my $response = $self->_request($path);
 
-    my ( $channel_id, $start_epoch ) = $path =~ m{(\d+)/(\d+)};
+    my ( $channel_id, $programme_id ) = $path =~ m{(\d+)/(\d+)};
 
     my $tree = HTML::TreeBuilder::XPath->new;
     $tree->parse_content( $response->content );
-
-    #$tree->findnodes('//td[@class="x-channel"]/a')->pop->content_list;
 
     my @channel_parts
         = $tree->findnodes('//td[@class="x-channel"]/a')->pop->content_list;
@@ -78,23 +78,59 @@ sub _programme {
         name   => $channel_name
     );
 
-    # warn "[$channel_id, $channel_number, $channel_name]";
-
     my @title_parts
         = $tree->findnodes('//td[id("x-title")]/a')->pop->content_list;
     my $title = $title_parts[0];
     my $subtitle = $title_parts[2] || '';
-    # warn "[$title / $subtitle]";
+
+    my $year = DateTime->from_epoch( epoch => $programme_id )->year;
+
+    my $strptime = DateTime::Format::Strptime->new(
+        pattern  => '%Y %a, %b %d, %I:%M %p',
+        locale   => 'en_GB',
+        on_error => 'croak',
+    );
+
+    # Sun, Jun 14, 10:00 PM to 11:00 PM (75 mins)
+    my @time_parts
+        = $tree->findnodes('//div[id("x-time")]')->pop->content_list;
+    my $time_text = $time_parts[0];
+    my ( $start_text, $stop_text ) = split ' to ', $time_text;
+    $start_text = "$year $start_text";
+    my $start = $strptime->parse_datetime($start_text);
+
+    $stop_text =~ s/ \(.+$//;
+    my $strptime2 = DateTime::Format::Strptime->new(
+        pattern  => '%I:%M %p',
+        locale   => 'en_GB',
+        on_error => 'croak',
+    );
+    my $time = $strptime2->parse_datetime($stop_text);
+    my $stop = DateTime->new(
+        year   => $start->year,
+        month  => $start->month,
+        day    => $start->day,
+        hour   => $time->hour,
+        minute => $time->minute,
+
+    );
+
+    # programme runs over midnight
+    if ( $stop < $start ) {
+        $stop->add( days => 1 );
+    }
 
     my @description_parts
         = $tree->findnodes('//td[id("x-description")]')->pop->content_list;
     my $description = $description_parts[0];
     $description =~ s/^ +//;
     $description =~ s/ +$//;
-    # warn "[$description]";
 
     return Net::MythWeb::Programme->new(
+        id          => $programme_id,
         channel     => $channel,
+        start       => $start,
+        stop        => $stop,
         title       => $title,
         subtitle    => $subtitle,
         description => $description,
