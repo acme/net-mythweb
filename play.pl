@@ -7,6 +7,10 @@ use Perl6::Say;
 
 my $mythweb = Net::MythWeb->new( hostname => 'owl.local', port => 80 );
 
+foreach my $channel ( $mythweb->channels ) {
+    say $channel->id, ', ', $channel->number, ', ', $channel->name;
+}
+
 foreach my $recording ( $mythweb->recordings ) {
     say $recording->channel->id, ', ', $recording->channel->number, ', ',
         $recording->channel->name;

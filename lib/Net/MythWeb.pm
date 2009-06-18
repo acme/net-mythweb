@@ -35,6 +35,35 @@ has 'user_agent' => (
 
 __PACKAGE__->meta->make_immutable;
 
+sub channels {
+    my $self = shift;
+    my @channels;
+
+    my $response = $self->_request('/mythweb/settings/tv/channels');
+
+    my $tree = HTML::TreeBuilder::XPath->new;
+    $tree->parse_content( $response->content );
+
+    foreach
+        my $tr ( $tree->findnodes('//tr[@class="settings"]')->get_nodelist )
+    {
+        my @tr_parts     = $tr->content_list;
+        my $number_input = ( $tr_parts[3]->content_list )[0];
+        my $id           = $number_input->attr('id');
+        $id =~ s/^channum_//;
+        my $number     = $number_input->attr('value');
+        my $name_input = ( $tr_parts[4]->content_list )[0];
+        my $name       = $name_input->attr('value');
+        push @channels,
+            Net::MythWeb::Channel->new(
+            id     => $id,
+            number => $number,
+            name   => $name,
+            );
+    }
+    return @channels;
+}
+
 sub recordings {
     my $self = shift;
 
