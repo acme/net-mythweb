@@ -55,8 +55,13 @@ sub download {
 }
 
 sub delete {
-    my ( $self ) = @_;
-    $self->mythweb->_delete_programme( $self );
+    my ($self) = @_;
+    $self->mythweb->_delete_programme($self);
+}
+
+sub record {
+    my ( $self, $start_extra, $stop_extra ) = @_;
+    $self->mythweb->_record_programme( $self, $start_extra, $stop_extra );
 }
 
 1;

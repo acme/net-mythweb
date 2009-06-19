@@ -6,8 +6,8 @@ use DateTime::Format::Strptime;
 use HTML::TreeBuilder::XPath;
 use Net::MythWeb::Channel;
 use Net::MythWeb::Programme;
-use LWP;
 use URI::URL;
+use WWW::Mechanize;
 
 our $VERSION = '0.33';
 
@@ -23,11 +23,11 @@ has 'port' => (
     default => 80,
 );
 
-has 'user_agent' => (
+has 'mechanize' => (
     is      => 'rw',
     isa     => 'LWP::UserAgent',
     default => sub {
-        my $ua = LWP::UserAgent->new;
+        my $ua = WWW::Mechanize->new;
         $ua->default_header( 'Accept-Language' => 'en' );
         return $ua;
     },
@@ -40,9 +40,8 @@ sub channels {
     my @channels;
 
     my $response = $self->_request('/mythweb/settings/tv/channels');
-
-    my $tree = HTML::TreeBuilder::XPath->new;
-    $tree->parse_content( $response->content );
+    my $tree     = HTML::TreeBuilder::XPath->new;
+    $tree->parse_content( $response->decoded_content );
 
     foreach
         my $tr ( $tree->findnodes('//tr[@class="settings"]')->get_nodelist )
@@ -72,7 +71,7 @@ sub recordings {
     my $response = $self->_request('/mythweb/tv/recorded');
 
     my $tree = HTML::TreeBuilder::XPath->new;
-    $tree->parse_content( $response->content );
+    $tree->parse_content( $response->decoded_content );
 
     my %seen;
     foreach my $link ( $tree->findnodes('//a')->get_nodelist ) {
@@ -85,6 +84,13 @@ sub recordings {
     return @recordings;
 }
 
+sub programme {
+    my ( $self, $channel, $start ) = @_;
+    my $channel_id  = $channel->id;
+    my $start_epoch = $start->epoch;
+    return $self->_programme("/mythweb/tv/detail/$channel_id/$start_epoch");
+}
+
 sub _programme {
     my ( $self, $path ) = @_;
     my $response = $self->_request($path);
@@ -92,7 +98,7 @@ sub _programme {
     my ( $channel_id, $programme_id ) = $path =~ m{(\d+)/(\d+)};
 
     my $tree = HTML::TreeBuilder::XPath->new;
-    $tree->parse_content( $response->content );
+    $tree->parse_content( $response->decoded_content );
 
     my @channel_parts
         = $tree->findnodes('//td[@class="x-channel"]/a')->pop->content_list;
@@ -173,7 +179,7 @@ sub _download_programme {
             . $programme->channel->id . '/'
             . $programme->id );
     my $mirror_response
-        = $self->user_agent->get( $uri, ':content_file' => $filename );
+        = $self->mechanize->get( $uri, ':content_file' => $filename );
     confess( $mirror_response->status_line )
         unless $mirror_response->is_success;
 }
@@ -187,12 +193,31 @@ sub _delete_programme {
             . $programme->id );
 }
 
+sub _record_programme {
+    my ( $self, $programme, $start_extra, $stop_extra ) = @_;
+    $start_extra ||= 0;
+    $stop_extra  ||= 0;
+    my $channel_id   = $programme->channel->id;
+    my $programme_id = $programme->id;
+
+    $self->_request("/mythweb/tv/detail/$channel_id/$programme_id");
+    $self->mechanize->submit_form(
+        form_name => 'program_detail',
+        fields    => {
+            record      => 1,
+            startoffset => $start_extra,
+            endoffset   => $stop_extra,
+        },
+        button => 'save',
+    );
+}
+
 sub _request {
     my ( $self, $path ) = @_;
     my $uri = $self->_uri($path);
 
-    my $response = $self->user_agent->get($uri);
-    confess("Error fetching $uri: $response->status_line")
+    my $response = $self->mechanize->get($uri);
+    confess( "Error fetching $uri: " . $response->status_line )
         unless $response->is_success;
 
     return $response;
