@@ -85,18 +85,6 @@ sub recordings {
     return @recordings;
 }
 
-sub _download_programme {
-    my ( $self, $programme, $filename ) = @_;
-    my $uri
-        = $self->_uri( '/mythweb/pl/stream/'
-            . $programme->channel->id . '/'
-            . $programme->id );
-    my $mirror_response
-        = $self->user_agent->get( $uri, ':content_file' => $filename );
-    confess( $mirror_response->status_line )
-        unless $mirror_response->is_success;
-}
-
 sub _programme {
     my ( $self, $path ) = @_;
     my $response = $self->_request($path);
@@ -176,6 +164,27 @@ sub _programme {
         description => $description,
         mythweb     => $self,
     );
+}
+
+sub _download_programme {
+    my ( $self, $programme, $filename ) = @_;
+    my $uri
+        = $self->_uri( '/mythweb/pl/stream/'
+            . $programme->channel->id . '/'
+            . $programme->id );
+    my $mirror_response
+        = $self->user_agent->get( $uri, ':content_file' => $filename );
+    confess( $mirror_response->status_line )
+        unless $mirror_response->is_success;
+}
+
+sub _delete_programme {
+    my ( $self, $programme ) = @_;
+
+    $self->_request( '/mythweb/tv/recorded?delete=yes&chanid='
+            . $programme->channel->id
+            . '&starttime='
+            . $programme->id );
 }
 
 sub _request {

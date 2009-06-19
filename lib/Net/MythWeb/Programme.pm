@@ -54,5 +54,10 @@ sub download {
     $self->mythweb->_download_programme( $self, $filename );
 }
 
+sub delete {
+    my ( $self ) = @_;
+    $self->mythweb->_delete_programme( $self );
+}
+
 1;
 

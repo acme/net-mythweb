@@ -26,7 +26,6 @@ foreach my $recording ( $mythweb->recordings ) {
     }
     my $filename = $title . ' ' . $recording->start . '.mpg';
     $filename =~ s{[^a-zA-Z0-9]}{_}g;
-    $recording->download($filename);
-    last;
-
+    # $recording->download($filename);
+    # $recording->delete;
 }
