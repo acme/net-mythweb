@@ -42,7 +42,17 @@ has 'channel' => (
     isa => 'Net::MythWeb::Channel',
 );
 
+has 'mythweb' => (
+    is  => 'rw',
+    isa => 'Net::MythWeb',
+);
+
 __PACKAGE__->meta->make_immutable;
+
+sub download {
+    my ( $self, $filename ) = @_;
+    $self->mythweb->_download_programme( $self, $filename );
+}
 
 1;
 

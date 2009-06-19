@@ -18,4 +18,15 @@ foreach my $recording ( $mythweb->recordings ) {
         ', ',
         $recording->subtitle, ', ',
         $recording->description;
+    my $title;
+    if ( $recording->subtitle ) {
+        $title = $recording->title . ' ' . $recording->subtitle;
+    } else {
+        $title = $recording->title;
+    }
+    my $filename = $title . ' ' . $recording->start . '.mpg';
+    $filename =~ s{[^a-zA-Z0-9]}{_}g;
+    $recording->download($filename);
+    last;
+
 }

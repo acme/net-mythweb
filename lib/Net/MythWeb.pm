@@ -85,6 +85,18 @@ sub recordings {
     return @recordings;
 }
 
+sub _download_programme {
+    my ( $self, $programme, $filename ) = @_;
+    my $uri
+        = $self->_uri( '/mythweb/pl/stream/'
+            . $programme->channel->id . '/'
+            . $programme->id );
+    my $mirror_response
+        = $self->user_agent->get( $uri, ':content_file' => $filename );
+    confess( $mirror_response->status_line )
+        unless $mirror_response->is_success;
+}
+
 sub _programme {
     my ( $self, $path ) = @_;
     my $response = $self->_request($path);
@@ -141,7 +153,6 @@ sub _programme {
         day    => $start->day,
         hour   => $time->hour,
         minute => $time->minute,
-
     );
 
     # programme runs over midnight
@@ -163,17 +174,22 @@ sub _programme {
         title       => $title,
         subtitle    => $subtitle,
         description => $description,
+        mythweb     => $self,
     );
 }
 
 sub _request {
     my ( $self, $path ) = @_;
-    my $uri = 'http://' . $self->hostname . ':' . $self->port . $path;
+    my $uri = $self->_uri($path);
 
     my $response = $self->user_agent->get($uri);
     confess("Error fetching $uri: $response->status_line")
         unless $response->is_success;
 
     return $response;
+}
 
+sub _uri {
+    my ( $self, $path ) = @_;
+    return 'http://' . $self->hostname . ':' . $self->port . $path;
 }
