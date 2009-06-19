@@ -24,8 +24,10 @@ foreach my $recording ( $mythweb->recordings ) {
     } else {
         $title = $recording->title;
     }
-    my $filename = $title . ' ' . $recording->start . '.mpg';
+    my $filename = $title . ' ' . $recording->start;
     $filename =~ s{[^a-zA-Z0-9]}{_}g;
-    # $recording->download($filename);
-    # $recording->delete;
+    $filename = '/media/disk/tv/' . $filename . '.mpg';
+    say $filename;
+    $recording->download($filename);
+    $recording->delete if -f $filename;
 }
