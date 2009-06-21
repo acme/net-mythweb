@@ -39,3 +39,33 @@ sub record {
 
 1;
 
+__END__
+
+=head1 NAME
+
+Net::MythWeb::Programme - A MythWeb programme
+
+=head1 METHODS
+
+=head2 delete
+
+=head2 download
+
+=head2 record
+
+=head1 SEE ALSO
+
+L<Net::MythWeb>, L<Net::MythWeb::Channel>.
+
+=head1 AUTHOR
+
+Leon Brocard <acme@astray.com>.
+
+=head1 COPYRIGHT
+
+Copyright (C) 2009, Leon Brocard
+
+=head1 LICENSE
+
+This module is free software; you can redistribute it or modify it
+under the same terms as Perl itself.

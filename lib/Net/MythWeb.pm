@@ -224,3 +224,99 @@ sub _uri {
     my ( $self, $path ) = @_;
     return 'http://' . $self->hostname . ':' . $self->port . $path;
 }
+
+__END__
+
+=head1 NAME
+
+Net::MythWeb - Interface to MythTV via MythWeb
+
+=head1 SYNOPSIS
+
+  use Net::MythWeb;
+
+  my $mythweb = Net::MythWeb->new( hostname => 'owl.local', port => 80 );
+
+  foreach my $channel ( $mythweb->channels ) {
+      print $channel->name . "\n";
+  }
+
+  foreach my $recording ( $mythweb->recordings ) {
+    print $recording->channel->id, ', ', $recording->channel->number, ', ',
+        $recording->channel->name, "\n";
+    print $recording->start, ' -> ', $recording->stop, ': ', $recording->title,
+        ', ',
+        $recording->subtitle, ', ',
+        $recording->description;
+        $recording->download("recording.mpg");
+        $recording->delete;
+   }
+
+   my $programme = $mythweb->programme( $channel, $start_as_datetime );
+   $programme->record;
+
+=head1 DESCRIPTION
+
+This module provides a simple interface to MythTV by making HTTP
+requests to its MythWeb web server front end. MythTV is a free
+open source digital video recorder. Find out more at
+L<http://www.mythtv.org/>.
+
+This module allows you to query the recordings, download
+them to a local file and schedule new recordings.
+
+=head1 METHODS
+
+=head2 new
+
+The constructor takes a hostname and port:
+
+  my $mythweb = Net::MythWeb->new( hostname => 'owl.local', port => 80 );
+
+=head2 channels
+
+List the channels and return them as L<Net::MythWeb::Channel> objects:
+
+  foreach my $channel ( $mythweb->channels ) {
+      print $channel->name . "\n";
+  }
+
+=head2 recordings
+
+List the recordings and return them as L<Net::MythWeb::Programme> objects:
+
+  foreach my $recording ( $mythweb->recordings ) {
+    print $recording->channel->id, ', ', $recording->channel->number, ', ',
+        $recording->channel->name, "\n";
+    print $recording->start, ' -> ', $recording->stop, ': ', $recording->title,
+        ', ',
+        $recording->subtitle, ', ',
+        $recording->description;
+        $recording->download("recording.mpg");
+        $recording->delete;
+   }
+
+=head2 programme
+
+Returns a L<Net::MythWeb::Programme> for the programme which starts
+at a given time on the channel:
+
+   my $programme = $mythweb->programme( $channel, $start_as_datetime );
+   $programme->record;
+
+=head1 SEE ALSO
+
+L<Net::MythWeb::Channel>, L<Net::MythWeb::Programme>.
+
+=head1 AUTHOR
+
+Leon Brocard <acme@astray.com>.
+
+=head1 COPYRIGHT
+
+Copyright (C) 2009, Leon Brocard
+
+=head1 LICENSE
+
+This module is free software; you can redistribute it or modify it
+under the same terms as Perl itself.
