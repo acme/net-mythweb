@@ -12,16 +12,19 @@ use WWW::Mechanize;
 our $VERSION = '0.33';
 
 has 'hostname' => (
+    is      => 'ro',
     isa     => 'Str',
     default => 'localhost',
 );
 
 has 'port' => (
+    is      => 'ro',
     isa     => 'Int',
     default => 80,
 );
 
 has 'mechanize' => (
+    is      => 'ro',
     isa     => 'LWP::UserAgent',
     default => sub {
         my $ua = WWW::Mechanize->new;

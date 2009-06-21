@@ -2,11 +2,11 @@ package Net::MythWeb::Channel;
 use Moose;
 use MooseX::StrictConstructor;
 
-has 'id' => ( isa => 'Int' );
+has 'id' => ( is => 'ro', isa => 'Int' );
 
-has 'number' => ( isa => 'Int' );
+has 'number' => ( is => 'ro', isa => 'Int' );
 
-has 'name' => ( isa => 'Str' );
+has 'name' => ( is => 'ro', isa => 'Str' );
 
 __PACKAGE__->meta->make_immutable;
 
