@@ -2,50 +2,23 @@ package Net::MythWeb::Programme;
 use Moose;
 use MooseX::StrictConstructor;
 
-has 'id' => (
-    is  => 'rw',
-    isa => 'Int',
-);
+has 'id' => ( isa => 'Int' );
 
-has 'title' => (
-    is  => 'rw',
-    isa => 'Str',
-);
+has 'title' => ( isa => 'Str' );
 
-has 'subtitle' => (
-    is  => 'rw',
-    isa => 'Str',
-);
+has 'subtitle' => ( isa => 'Str' );
 
-has 'channel' => (
-    is  => 'rw',
-    isa => 'Str',
-);
+has 'channel' => ( isa => 'Str' );
 
-has 'start' => (
-    is  => 'rw',
-    isa => 'DateTime',
-);
+has 'start' => ( isa => 'DateTime' );
 
-has 'stop' => (
-    is  => 'rw',
-    isa => 'DateTime',
-);
+has 'stop' => ( isa => 'DateTime' );
 
-has 'description' => (
-    is  => 'rw',
-    isa => 'Str',
-);
+has 'description' => ( isa => 'Str' );
 
-has 'channel' => (
-    is  => 'rw',
-    isa => 'Net::MythWeb::Channel',
-);
+has 'channel' => ( isa => 'Net::MythWeb::Channel' );
 
-has 'mythweb' => (
-    is  => 'rw',
-    isa => 'Net::MythWeb',
-);
+has 'mythweb' => ( isa => 'Net::MythWeb' );
 
 __PACKAGE__->meta->make_immutable;
 
