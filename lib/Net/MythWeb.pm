@@ -73,13 +73,20 @@ sub recordings {
     my $tree = HTML::TreeBuilder::XPath->new;
     $tree->parse_content( $response->decoded_content );
 
-    my %seen;
-    foreach my $link ( $tree->findnodes('//a')->get_nodelist ) {
-        my $href = $link->attr('href');
-        next unless $href;
-        next unless $href =~ m{/detail/};
-        next if $seen{$href}++;
-        push @recordings, $self->_programme($href);
+    foreach
+        my $row ( $tree->findnodes('//tr[@class="recorded"]')->get_nodelist )
+    {
+        next unless $row->attr('id') =~ /inforow_/;
+        next if $row->as_HTML =~ /Still Recording/;
+
+        my %seen;
+        foreach my $link ( $tree->findnodes( '//a', $row )->get_nodelist ) {
+            my $href = $link->attr('href');
+            next unless $href;
+            next unless $href =~ m{/detail/};
+            next if $seen{$href}++;
+            push @recordings, $self->_programme($href);
+        }
     }
     return @recordings;
 }
