@@ -107,6 +107,9 @@ sub _programme {
     my $tree = HTML::TreeBuilder::XPath->new;
     $tree->parse_content( $response->decoded_content );
 
+    return
+        unless $tree->findnodes('//title')->pop->as_text =~ /Program Detail/;
+
     my @channel_parts
         = $tree->findnodes('//td[@class="x-channel"]/a')->pop->content_list;
     my $channel_number = $channel_parts[3]->content->[0];

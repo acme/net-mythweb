@@ -1,5 +1,8 @@
 Revision history for Perl module Net::MythWeb:
 
+0.34
+    - return undef when programmes is not found
+
 0.33 Sun Jun 21 12:54:39 BST 2009
     - inital release
 

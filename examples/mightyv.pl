@@ -48,6 +48,10 @@ foreach my $event (@events) {
     my $channel = $channels{$matching_channel};
     die "No channel found for $channel_name" unless $channel;
     my $programme = $mythweb->programme( $channel, $start );
+    unless ($programme) {
+        warn "Failed to find $event->{title}\n";
+        next;
+    }
     $event->{programme} = $programme;
     $event->{start_dt}  = $start;
     $event->{stop_dt}   = $stop;
@@ -56,7 +60,8 @@ foreach my $event (@events) {
 my $spanset = DateTime::SpanSet->from_spans( spans => [] );
 
 foreach my $event (@events) {
-    my $url   = $event->{url};
+    next unless $event->{programme};
+    my $title = $event->{title};
     my $start = $event->{start_dt};
     my $stop  = $event->{stop_dt};
     my $span  = DateTime::Span->from_datetimes(
@@ -73,6 +78,7 @@ foreach my $event (@events) {
 }
 
 foreach my $event (@events) {
+    next unless $event->{programme};
     my $url       = $event->{url};
     my $start     = $event->{start_dt};
     my $stop      = $event->{stop_dt};
