@@ -85,7 +85,8 @@ sub recordings {
             next unless $href;
             next unless $href =~ m{/detail/};
             next if $seen{$href}++;
-            push @recordings, $self->_programme($href);
+            my $path = URI->new($href)->path;
+            push @recordings, $self->_programme($path);
         }
     }
     return @recordings;
@@ -101,7 +102,6 @@ sub programme {
 sub _programme {
     my ( $self, $path ) = @_;
     my $response = $self->_request($path);
-
     my ( $channel_id, $programme_id ) = $path =~ m{(\d+)/(\d+)};
 
     my $tree = HTML::TreeBuilder::XPath->new;
@@ -112,8 +112,8 @@ sub _programme {
 
     my @channel_parts
         = $tree->findnodes('//td[@class="x-channel"]/a')->pop->content_list;
-    my $channel_number = $channel_parts[3]->content->[0];
-    my $channel_name   = $channel_parts[5];
+    my $channel_number = '1';
+    my $channel_name   = $channel_parts[1];
     $channel_name =~ s/^ +//;
     $channel_name =~ s/ +$//;
 
@@ -225,6 +225,7 @@ sub _record_programme {
 sub _request {
     my ( $self, $path ) = @_;
     my $uri = $self->_uri($path);
+    warn $uri;
 
     my $response = $self->mechanize->get($uri);
     confess( "Error fetching $uri: " . $response->status_line )
