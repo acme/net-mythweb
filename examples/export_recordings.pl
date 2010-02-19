@@ -24,6 +24,17 @@ foreach my $recording ( $mythweb->recordings ) {
     $filename =~ s{[^a-zA-Z0-9]}{_}g;
     $filename = '/media/disk/tv/' . $filename . '.mpg';
     say $filename;
+    if ( -f $filename ) {
+        say "Already have filename, skipping";
+        next;
+    }
     $recording->download($filename);
-    $recording->delete if -f $filename && -s $filename;
+    if ( -f $filename && -s $filename ) {
+        if ( -s $filename > 1024 * 1024 ) {
+
+            $recording->delete;
+        } else {
+            say "Error extracting";
+        }
+    }
 }
